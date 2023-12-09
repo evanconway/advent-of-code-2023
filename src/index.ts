@@ -1,1 +1,3 @@
-console.log('Advent of Code 2023');
+import { day1 } from "./day1";
+
+day1('input/day1.txt');

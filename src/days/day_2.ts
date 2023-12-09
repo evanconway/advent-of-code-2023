@@ -33,9 +33,28 @@ export const day2 = (inputFilePath: string) => {
         return game;
     };
 
-    const part1 = (lines: string[]) => {
-        const games = lines.map(line => lineToGame(line));
+    /**
+     * "Minimum power" is a value which represents the fewest cubes a game could have been 
+     * played with. It's the least number of red, green, and blue cubes multiplied together,
+     * That still would have allowed for all sets within that game.
+     * 
+     * @param game  
+     */
+    const getGameMinimumPower = (game: Game) => {
+        const resultSet = game.sets.reduce((result, set) => {
+            if (set.red > result.red) result.red = set.red;
+            if (set.green > result.green) result.green = set.green;
+            if (set.blue > result.blue) result.blue = set.blue;
+            return result;
+        }, getBlankSet());
+        return resultSet.red * resultSet.green * resultSet.blue;
+    };
 
+    const part2 = (games: Game[]) => {
+        return games.reduce((total, game) => total + getGameMinimumPower(game), 0);
+    };
+
+    const part1 = (games: Game[]) => {
         /*
             The bag containing cubes holds:
             12 red
@@ -64,7 +83,9 @@ export const day2 = (inputFilePath: string) => {
             console.error(err);
             return;
         }
-        const lines = data.split('\r\n')
-        console.log(`Day 2 part 1: ${part1(lines)}`);
+        const lines = data.split('\r\n');
+        const games = lines.map(line => lineToGame(line));
+        console.log(`Day 2 part 1: ${part1(games)}`);
+        console.log(`Day 2 part 2: ${part2(games)}`);
     });
 };

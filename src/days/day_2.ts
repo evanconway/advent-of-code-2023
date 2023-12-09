@@ -21,7 +21,7 @@ export const day2 = (inputFilePath: string) => {
             sets: data[1].split(';').map(setStr => {
                 const vals = setStr.split(',');
                 const set: Set = getBlankSet();
-                for (var i = 0; i < vals.length; i++) {
+                for (let i = 0; i < vals.length; i++) {
                     const valParts = vals[i].split(' ').filter(v => v !== '');
                     if (valParts[1] == 'red') set.red += Number.parseInt(valParts[0]);
                     if (valParts[1] == 'green') set.green += Number.parseInt(valParts[0]);
@@ -68,7 +68,7 @@ export const day2 = (inputFilePath: string) => {
 
         return games.reduce((total, game) => {
             let valid = true;
-            for (var s = 0; s < game.sets.length; s++) {
+            for (let s = 0; s < game.sets.length; s++) {
                 const set = game.sets[s];
                 if (set.red > maxRed) valid = false;
                 if (set.green > maxGreen) valid = false;

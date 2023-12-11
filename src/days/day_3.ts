@@ -9,65 +9,83 @@ export const day3 = (inputFilePath: string) => {
     const grid: Cell[][] = [];
     const NUMS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 
-    const part1 = () => {
-        const cellsVisited = new Set<number>();
+    const getNumberAtLoc = (y: number, x: number, ignoreIds = new Set<number>()) => {
+        if (y < 0 || y >= grid.length) return null;
+        const row = grid[y];
+        if (x < 0 || x >= row.length) return null;
+        const cell = row[x];
+        if (ignoreIds.has(cell.id)) return null;
+        if (!NUMS.includes(cell.char)) return null;
+        let indexStart = x;
+        let indexEnd = x;
+        while (grid[y][indexStart - 1] !== undefined && NUMS.includes(grid[y][indexStart - 1].char)) indexStart--;
+        while (grid[y][indexEnd + 1] !== undefined && NUMS.includes(grid[y][indexEnd + 1].char)) indexEnd++;
+        let foundStr = "";
+        const ids: number[] = []; // cell ids accounted for
+        for (let i = indexStart; i <= indexEnd; i++) {
+            foundStr += grid[y][i].char;
+            ids.push(grid[y][i].id);
+        }
+        return {
+            number: Number.parseInt(foundStr),
+            ids
+        };
+    };
 
-        const getNumberAtLoc = (y: number, x: number) => {
-            if (y < 0 || y >= grid.length) return 0;
-            const row = grid[y];
-            if (x < 0 || x >= row.length) return 0;
-            const cell = row[x];
-            if (cellsVisited.has(cell.id)) return 0;
-            if (!NUMS.includes(cell.char)) return 0;
-            let indexStart = x;
-            let indexEnd = x;
-            while (grid[y][indexStart - 1] !== undefined && NUMS.includes(grid[y][indexStart - 1].char)) indexStart--;
-            while (grid[y][indexEnd + 1] !== undefined && NUMS.includes(grid[y][indexEnd + 1].char)) indexEnd++;
-            let foundStr = "";
-            for (let i = indexStart; i <= indexEnd; i++) {
-                foundStr += grid[y][i].char;
-                cellsVisited.add(grid[y][i].id);
+    const getNumbersSurroundingPos = (y: number, x: number) => {
+        const idsProcessed = new Set<number>();
+        const result: number[] = [];
+        const handleAdjacent = (offsetY: number, offsetX: number) => {
+            const val = getNumberAtLoc(y + offsetY, x + offsetX, idsProcessed);
+            if (val !== null) {
+                val.ids.forEach(id => idsProcessed.add(id));
+                result.push(val.number);
             }
-            return Number.parseInt(foundStr);
         };
+        handleAdjacent(0, 1);
+        handleAdjacent(0, -1);
+        handleAdjacent(1, 0);
+        handleAdjacent(-1, 0);
+        handleAdjacent(1, 1);
+        handleAdjacent(1, -1);
+        handleAdjacent(-1, 1);
+        handleAdjacent(-1, -1);
+        return result;
+    };
 
+    const part1 = () => {
         const getTotalSurroundingPos = (y: number, x: number) => {
-            // rework so visited cells are accounted for here and not globally
-            const cell = grid[y][x]; // 
-            let result = 0;
-            result += getNumberAtLoc(y, x + 1);
-            result += getNumberAtLoc(y, x - 1);
-            result += getNumberAtLoc(y + 1, x);
-            result += getNumberAtLoc(y - 1, x);
-            result += getNumberAtLoc(y + 1, x + 1);
-            result += getNumberAtLoc(y + 1, x - 1);
-            result += getNumberAtLoc(y - 1, x + 1);
-            result += getNumberAtLoc(y - 1, x - 1);
-            return result;
+            return getNumbersSurroundingPos(y, x).reduce((total, current) => total + current, 0);
         };
-
         let result = 0;
-
         const processLocation = (y: number, x: number) => {
             const cell = grid[y][x];
-            if (cellsVisited.has(cell.id)) return;
-            if (cell.char === '.') {
-                cellsVisited.add(cell.id);
-                return;
-            }
-            if (NUMS.includes(cell.char)) return; // only add numbers to cells visited when returned for part number
-            // if we're here, the cell must be an unprocessed part
+            if (cell.char === '.') return;
+            if (NUMS.includes(cell.char)) return;
             result += getTotalSurroundingPos(y, x);
         };
-
         for (let y = 0; y < grid.length; y++) {
-            const row = grid[y];
-            for (let x = 0; x < row.length; x++) {
-
+            for (let x = 0; x < grid[y].length; x++) {
                 processLocation(y, x);
             }
         }
+        return result;
+    };
 
+    const part2 = () => {
+        let result = 0;
+        const processLocation = (y: number, x: number) => {
+            const cell = grid[y][x];
+            if (cell.char === '.') return;
+            if (NUMS.includes(cell.char)) return;
+            const numbers = getNumbersSurroundingPos(y, x);
+            if (numbers.length == 2) result += (numbers[0] * numbers[1]);
+        };
+        for (let y = 0; y < grid.length; y++) {
+            for (let x = 0; x < grid[y].length; x++) {
+                processLocation(y, x);
+            }
+        }
         return result;
     };
 
@@ -91,6 +109,6 @@ export const day3 = (inputFilePath: string) => {
             }
         }
 
-        console.log(part1());
+        console.log(part2());
     });
 };

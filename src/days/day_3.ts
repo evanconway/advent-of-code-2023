@@ -32,6 +32,7 @@ export const day3 = (inputFilePath: string) => {
         };
 
         const getTotalSurroundingPos = (y: number, x: number) => {
+            // rework so visited cells are accounted for here and not globally
             const cell = grid[y][x]; // 
             let result = 0;
             result += getNumberAtLoc(y, x + 1);

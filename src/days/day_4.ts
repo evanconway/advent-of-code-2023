@@ -19,12 +19,17 @@ export const day4 = () => {
         return card;
     };
 
-    const cardToPointsWon = (card: Card) => {
-        let matches = -1;
+    const cardGetNumMatches = (card: Card) => {
+        let matches = 0;
         for (let i = 0; i < card.yourNumbers.length; i++) {
             if (card.cardNumbers.includes(card.yourNumbers[i])) matches += 1;
         }
-        return matches >= 0 ? Math.pow(2, matches) : 0;
+        return matches;
+    };
+
+    const cardToPointsWon = (card: Card) => {
+        const matches = cardGetNumMatches(card);
+        return matches > 0 ? Math.pow(2, matches - 1) : 0;
     };
 
     const part1 = (cards: Card[]) => {
@@ -32,28 +37,29 @@ export const day4 = () => {
     };
 
     const part2 = (cards: Card[]) => {
-        interface CardWithPoints extends Card {
-            points: number
+        // misunderstood rules, the result is the number of cards you had + all cards won
+        interface CardWithMatchCount extends Card {
+            matches: number
         }
-        const pointCards: CardWithPoints[] = cards.map(c => ({...c, points: cardToPointsWon(c) }));
-        const cardMap = new Map<number, CardWithPoints>();
+        const pointCards: CardWithMatchCount[] = cards.map(c => ({...c, matches: cardGetNumMatches(c) }));
+        const cardMap = new Map<number, CardWithMatchCount>();
         for (let i = 0; i < pointCards.length; i++) cardMap.set(pointCards[i].id, pointCards[i]);
         // reuse card input as stack
-        let cardsWithNoWin = 0;
+        let result = 0;
         while (pointCards.length > 0) {
             const card = pointCards.pop()!;
-            if (card.points === 0) cardsWithNoWin++;
-            else {
-                for (let cardId = card.id + 1; cardId <= card.id + card.points; cardId++) {
+            result++;
+            if (card.matches > 0) {
+                for (let cardId = card.id + 1; cardId <= card.id + card.matches; cardId++) {
                     const cardToPush = cardMap.get(cardId);
                     if (cardToPush !== undefined) pointCards.push(cardToPush);
                 }
             }
         }
-        return cardsWithNoWin;
+        return result++;
     };
 
-    fs.readFile('input/day4test.txt', 'utf8', (err, data) => {
+    fs.readFile('input/day4.txt', 'utf8', (err, data) => {
         if (err) {
             console.error(err);
             return;
